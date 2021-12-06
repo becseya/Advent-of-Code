@@ -30,17 +30,20 @@ int main()
 {
     int depth              = 0;
     int horizontalPosition = 0;
+    int aim                = 0;
 
     forEachLine([&](istringstream& line, int lineIdx) -> void {
         //
         auto [direction, displacement] = parseLine(line);
 
         if (direction == Direction::Down)
-            depth += displacement;
+            aim += displacement;
         else if (direction == Direction::Up)
-            depth -= displacement;
-        else if (direction == Direction::Forward)
+            aim -= displacement;
+        else if (direction == Direction::Forward) {
             horizontalPosition += displacement;
+            depth += aim * displacement;
+        }
     });
 
     cout << "dept: " << depth << ", horiz: " << horizontalPosition << " -> " << (depth * horizontalPosition) << "\n";
