@@ -14,8 +14,11 @@ unsigned calculateFuelCost(vector<int>& positions, int position)
 {
     unsigned fuel = 0;
 
-    for (auto& i : positions)
-        fuel += abs(i - position);
+    for (auto& i : positions) {
+        unsigned dist = abs(i - position);
+
+        fuel += dist * (dist + 1) / 2; // sum of natural number from 1 to N
+    }
 
     return fuel;
 }
