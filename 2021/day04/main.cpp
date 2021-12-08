@@ -111,13 +111,22 @@ int main()
         }
     });
 
+    unsigned winners = 0;
+
     for (auto& n : winnerNumbers) {
         for (auto& board : boards) {
+            if (board.isWinning())
+                continue;
+
             board.markMatching(n);
 
             if (board.isWinning()) {
-                cout << board.getSumOfUnmatching() * n << '\n';
-                return 0;
+                winners++;
+
+                if (winners == boards.size()) {
+                    cout << board.getSumOfUnmatching() * n << '\n';
+                    return 0;
+                }
             }
         }
     }
