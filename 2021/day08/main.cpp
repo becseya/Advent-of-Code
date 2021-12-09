@@ -41,6 +41,26 @@ struct Digit
 
         return activeNum;
     }
+
+    Digit sub(const Digit& other) const
+    { //
+        return Digit(mask & ~other.mask);
+    }
+
+    bool contains(const Digit& other) const
+    { //
+        return ((mask & other.mask) == other.mask);
+    }
+
+    bool operator!=(const Digit& other) const
+    { //
+        return (mask != other.mask);
+    }
+
+    bool operator==(const Digit& other) const
+    { //
+        return (mask == other.mask);
+    }
 };
 
 struct Entry
@@ -63,28 +83,87 @@ struct Entry
         }
     }
 
-    unsigned getNumberOfSignificantDigits()
+    unsigned getValue()
     {
-        unsigned sum = 0;
+        map<unsigned, Digit> knownDigits;
 
-        for (auto& digit : digits) {
+        for (auto& digit : samples) {
             switch (digit.getActiveSegmentNum()) {
-                case 2:
-                case 3:
-                case 4:
-                case 7: //
-                    sum++;
+                case 2: knownDigits[1] = digit; break;
+                case 3: knownDigits[7] = digit; break;
+                case 4: knownDigits[4] = digit; break;
+                case 7: knownDigits[8] = digit; break;
             }
         }
 
-        return sum;
+        // Segments with 6 active digits: 0, 6, 9
+
+        foreachDigitWithActiveSegmentNum(6, [&](Digit& digit) -> void {
+            if (digit.contains(knownDigits[4]))
+                knownDigits[9] = digit;
+        });
+
+        foreachDigitWithActiveSegmentNum(6, [&](Digit& digit) -> void {
+            if (digit.contains(knownDigits[1]) && digit != knownDigits[9])
+                knownDigits[0] = digit;
+        });
+
+        foreachDigitWithActiveSegmentNum(6, [&](Digit& digit) -> void {
+            if (digit != knownDigits[0] && digit != knownDigits[9])
+                knownDigits[6] = digit;
+        });
+
+        // Segments with 5 active digits: 2, 3, 5
+
+        Digit seg_bd = knownDigits[4].sub(knownDigits[1]);
+        foreachDigitWithActiveSegmentNum(5, [&](Digit& digit) -> void {
+            if (digit.contains(seg_bd))
+                knownDigits[5] = digit;
+        });
+
+        foreachDigitWithActiveSegmentNum(5, [&](Digit& digit) -> void {
+            if (digit.contains(knownDigits[1]))
+                knownDigits[3] = digit;
+        });
+
+        foreachDigitWithActiveSegmentNum(5, [&](Digit& digit) -> void {
+            if (digit != knownDigits[5] && digit != knownDigits[3])
+                knownDigits[2] = digit;
+        });
+
+        // Calculate value of digits
+        unsigned value = 0;
+        for (int i = 0; i < digits.size(); i++) {
+            value *= 10;
+            value += reverseSearch(knownDigits, digits[i]);
+        }
+
+        return value;
+    }
+
+    void foreachDigitWithActiveSegmentNum(unsigned activeSegmentNum, function<void(Digit&)> cb)
+    {
+        for (Digit& digit : samples) {
+            if (digit.getActiveSegmentNum() == activeSegmentNum)
+                cb(digit);
+        }
+    }
+
+    static int reverseSearch(map<unsigned, Digit>& digits, Digit digit)
+    {
+        for (const auto& keyVal : digits) {
+            if (keyVal.second == digit)
+                return keyVal.first;
+        }
+
+        throw runtime_error("Unknown digit");
     }
 };
 
 int main()
 {
     vector<Entry> entries;
-    unsigned      totalNumberOfSignificantDigits = 0;
+    unsigned      sumOfValues = 0;
 
     forEachLine([&](istringstream& line, int lineIdx) -> void {
         //
@@ -92,9 +171,9 @@ int main()
     });
 
     for (auto& e : entries)
-        totalNumberOfSignificantDigits += e.getNumberOfSignificantDigits();
+        sumOfValues += e.getValue();
 
-    cout << totalNumberOfSignificantDigits << '\n';
+    cout << sumOfValues << '\n';
 
     return 0;
 }
