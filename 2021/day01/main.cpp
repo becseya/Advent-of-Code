@@ -1,10 +1,9 @@
-#include <iostream>
-
-using namespace std;
+#include "../../common.hpp"
 
 int main()
 {
-    cout << "Hello world!\n";
-
-    return 0;
+    forEachLine([&](istringstream& line, int lineIdx) -> void {
+        //
+        cout << line.str() << '\n';
+    });
 }
