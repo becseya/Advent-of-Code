@@ -68,9 +68,7 @@ unsigned iterateCell(map_t& map, int rows, int cols, int r0, int c0)
 
 int main()
 {
-    static constexpr int NUMBER_OF_STEPS = 100;
-
-    unsigned flashes = 0;
+    unsigned iteration = 0;
     map_t    map;
 
     forEachLine([&](istringstream& line, int lineIdx) -> void {
@@ -78,16 +76,20 @@ int main()
         map.push_back(parseLine(line));
     });
 
-    for (int i = 0; i < NUMBER_OF_STEPS; i++) {
+    while (++iteration) {
 
         int rows = map.size();
         int cols = map[0].size();
 
+        unsigned flashes = 0;
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 flashes += iterateCell(map, rows, cols, r, c);
             }
         }
+
+        if (flashes == rows * cols)
+            break;
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -96,7 +98,7 @@ int main()
         }
     }
 
-    cout << flashes << "\n";
+    cout << iteration << "\n";
 
     return 0;
 }
