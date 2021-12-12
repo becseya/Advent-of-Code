@@ -41,6 +41,18 @@ struct Chunk
         }
     }
 
+    unsigned getAutoCorrectPoint()
+    {
+        switch (type) {
+            case ChunkType::Round: return 1;
+            case ChunkType::Square: return 2;
+            case ChunkType::Curly: return 3;
+            case ChunkType::Angle: return 4;
+        }
+
+        return 0;
+    }
+
     int getErrorPoint()
     {
         switch (type) {
@@ -54,7 +66,18 @@ struct Chunk
     }
 };
 
-int parseChunks(string line)
+unsigned long calculateAutocorrectPoint(list<Chunk>& stack)
+{
+    unsigned long points = 0;
+
+    for (list<Chunk>::reverse_iterator it = stack.rbegin(); it != stack.rend(); it++) {
+        points = points * 5 + it->getAutoCorrectPoint();
+    }
+
+    return points;
+}
+
+int parseChunks(string line, list<unsigned long>& autocorrectPoints)
 {
     list<Chunk> stack;
 
@@ -73,6 +96,8 @@ int parseChunks(string line)
         }
     }
 
+    autocorrectPoints.push_back(calculateAutocorrectPoint(stack));
+
     return 0;
 }
 
@@ -80,12 +105,20 @@ int main()
 {
     int totalErrorPoints = 0;
 
+    list<unsigned long> autocorrectPoints;
+
     forEachLine([&](istringstream& line, int lineIdx) -> void {
         //
-        totalErrorPoints += parseChunks(line.str());
+        totalErrorPoints += parseChunks(line.str(), autocorrectPoints);
     });
 
     cout << totalErrorPoints << '\n';
+
+    // find middle of autocorrectPoints
+    autocorrectPoints.sort();
+    int idx = autocorrectPoints.size() / 2;
+
+    cout << listAt(autocorrectPoints, idx) << '\n';
 
     return 0;
 }

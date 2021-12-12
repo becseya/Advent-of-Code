@@ -35,3 +35,15 @@ void forEachLine(function<void(istringstream&, int)> cb)
         cb(iss, index++);
     }
 }
+
+template<typename T>
+T listAt(const list<T>& list, size_t idx)
+{
+    if (list.size() > idx) {
+        auto it = list.begin();
+        std::advance(it, idx);
+        return *it;
+    }
+
+    throw runtime_error("List index out of limit");
+}
