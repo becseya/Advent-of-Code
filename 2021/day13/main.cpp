@@ -66,7 +66,7 @@ struct Paper
     {
         for (int y = 0; y < ySize; y++) {
             for (int x = 0; x < xSize; x++)
-                cout << (grid[x][y] > 0 ? '#' : '.');
+                cout << (grid[x][y] > 0 ? '#' : ' ');
 
             cout << '\n';
         }
@@ -115,12 +115,11 @@ int main()
 
                 grid.drawPoint(p);
             }
-        } else {
+        } else
             grid.fold(FoldingParam(line));
-            cout << grid.getNumberOfPainted() << '\n';
-            exit(0);
-        }
     });
+
+    grid.print();
 
     return 0;
 }
