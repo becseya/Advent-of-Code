@@ -33,9 +33,30 @@ string getPathString(vector<string> visited)
     return path;
 }
 
+void appendIfProperSmallCage(vector<string>& items, string item)
+{
+    if (!isSmallCave(item) || (item == NODE_START) || (item == NODE_END))
+        return;
+
+    if (occurs(items, item) == 0)
+        items.push_back(item);
+}
+
+vector<string> getSmallCaves(edges_t& edges)
+{
+    vector<string> smallCaves;
+
+    for (auto& pair : edges) {
+        appendIfProperSmallCage(smallCaves, pair.first);
+        appendIfProperSmallCage(smallCaves, pair.second);
+    }
+
+    return smallCaves;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
-vector<string> getReachableNeighbors(edges_t& edges, vector<string>& visited, string& node)
+vector<string> getReachableNeighbors(edges_t& edges, vector<string>& visited, string& node, string twiceVisitable)
 {
     vector<string> reachable;
 
@@ -49,7 +70,10 @@ vector<string> getReachableNeighbors(edges_t& edges, vector<string>& visited, st
         else
             continue;
 
-        if (isSmallCave(candidate) && (occurs(visited, candidate) > 0))
+        if (candidate == twiceVisitable) {
+            if (occurs(visited, candidate) >= 2)
+                continue;
+        } else if (isSmallCave(candidate) && (occurs(visited, candidate) > 0))
             continue;
 
         reachable.push_back(candidate);
@@ -58,10 +82,10 @@ vector<string> getReachableNeighbors(edges_t& edges, vector<string>& visited, st
     return reachable;
 }
 
-void findPaths(vector<string>& paths, edges_t& edges, string node, vector<string> visited = {})
+void findPaths(vector<string>& paths, edges_t& edges, string node, string twiceVisitable, vector<string> visited = {})
 {
     unsigned numberOfPaths = 0;
-    auto     neighbors     = getReachableNeighbors(edges, visited, node);
+    auto     neighbors     = getReachableNeighbors(edges, visited, node, twiceVisitable);
 
     visited.push_back(node);
 
@@ -72,7 +96,7 @@ void findPaths(vector<string>& paths, edges_t& edges, string node, vector<string
     }
 
     for (auto& neighbour : neighbors)
-        findPaths(paths, edges, neighbour, visited);
+        findPaths(paths, edges, neighbour, twiceVisitable, visited);
 }
 
 int main()
@@ -85,9 +109,23 @@ int main()
         edges.push_back(parseLine(line));
     });
 
-    findPaths(paths, edges, NODE_START);
+    auto smallCages = getSmallCaves(edges);
+    for (auto& smallCage : smallCages)
+        findPaths(paths, edges, NODE_START, smallCage);
 
-    cout << paths.size() << '\n';
+    // filter duplicates
+    sort(paths.begin(), paths.end());
+    size_t filteredSize = 0;
+
+    if (paths[0] != paths[1])
+        filteredSize++;
+
+    for (int i = 1; i < paths.size(); i++) {
+        if (paths[i] != paths[i - 1])
+            filteredSize++;
+    }
+
+    cout << filteredSize << '\n';
 
     return 0;
 }
