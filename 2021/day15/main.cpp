@@ -89,6 +89,35 @@ void printMap(grid_t& map, int rows, int cols)
     cout << '\n';
 }
 
+grid_t enlargeMap(grid_t mapOrig)
+{
+    static constexpr int SCALE = 5;
+
+    int rows = mapOrig.size();
+    int cols = mapOrig[0].size();
+
+    grid_t mapNew(rows * SCALE, vector<Entry>(cols * SCALE));
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int risk = mapOrig[r][c].risk;
+
+            for (int dr = 0; dr < SCALE; dr++) {
+                for (int dc = 0; dc < SCALE; dc++) {
+                    int riskNew = (risk + dr + dc);
+
+                    if (riskNew > 9)
+                        riskNew = 1 + ((riskNew - 1) % 9);
+
+                    mapNew[dr * rows + r][dc * cols + c] = { riskNew, UNKNOWN_RISK };
+                }
+            }
+        }
+    }
+
+    return mapNew;
+}
+
 int main()
 {
     grid_t map;
@@ -98,16 +127,13 @@ int main()
         map.push_back(parseLine(line));
     });
 
+    map = enlargeMap(map);
+
     int rows = map.size();
     int cols = map[0].size();
 
-    // This should be the maximal length (number of cells) of ideal path
-    // Theoretically it can be much larger, due to possible zig-zags
-    // Minimum should be 'rows + cols', the distance of diagonal points on a grid
-    // But the iteration in 'printMap' favours finding minimal paths quick
-    // (in fact a singe iteration finds the good solution)
-    // For now, 50 is a safety estimation
-    int numberOfIterations = 50;
+    // Only gives correct answer with 1 iteration, no idea why
+    int numberOfIterations = 1;
 
     map[0][0].totalRisk = 0;
 
