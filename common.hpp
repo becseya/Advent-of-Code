@@ -35,3 +35,28 @@ void forEachLine(function<void(istringstream&, int)> cb)
         cb(iss, index++);
     }
 }
+
+template<typename T>
+T listAt(const list<T>& list, size_t idx)
+{
+    if (list.size() > idx) {
+        auto it = list.begin();
+        std::advance(it, idx);
+        return *it;
+    }
+
+    throw runtime_error("List index out of limit");
+}
+
+template<typename T>
+unsigned occurs(const vector<T>& items, const T& itemToMatch)
+{
+    unsigned occurrences = 0;
+
+    for (auto& item : items) {
+        if (item == itemToMatch)
+            occurrences++;
+    }
+
+    return occurrences;
+}
